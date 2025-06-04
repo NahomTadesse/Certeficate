@@ -1,0 +1,74 @@
+.navbar {
+  width: 250px; /* Fixed width for the sidebar */
+  background-color: #1A1A1D; /* Dark background for the navbar */
+  color: white; /* Text color */
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Full height for the navbar */
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+
+  flex-direction: row;
+align-items: flex-end;
+  margin-bottom:50px; /* Decrease space between header and title */
+  font-size: 1.3em; /* Header font size */
+}
+
+.dashboardTitle {
+  color: white; /* White color for dashboard title */
+}
+
+.links {
+  flex-grow: 1; /* Allow the links area to grow */
+  overflow-y: auto; /* Scrollable links area */
+  text-decoration: none;
+}
+
+.linksInner {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+ 
+
+}
+
+.linkHeader {
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 10px; /* Space between link headers */
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer; /* Change cursor to pointer */
+  transition: background-color 0.3s;
+  padding-bottom: 5px; /* Add padding to create space without affecting children */
+}
+
+.linkHeader:not(:last-child) {
+  margin-bottom: 5px;
+  margin-top: 5px; /* Space only between headers */
+}
+
+.linkHeader:hover {
+  background-color: rgba(255, 255, 255, 0.1); /* Hover effect */
+}
+
+.linkItem {
+  padding: 10px 30px; /* Indent for sub-navigation items */
+  color: #ecf0f1; /* Lighter text for links */
+  transition: background-color 0.3s;
+  text-decoration: none;
+}
+
+.linkItem:hover {
+  background-color: rgba(255, 255, 255, 0.1); /* Hover effect */
+}
+
+.footer {
+  margin-top: auto; /* Push footer to the bottom */
+  text-align: center; /* Center footer content */
+  padding: 10px 0;
+  background-color: #34495e; /* Slightly lighter than the navbar */
+}
