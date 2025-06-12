@@ -40,25 +40,25 @@ export function StatsGrid() {
 
   const stats = [
     {
-      title: 'Total Revenue',
+      title: 'Total Registered Father',
       icon: 'receipt',
       value: summaryData.totalRevenue ? summaryData.totalRevenue.toLocaleString() : '0',
       diff: 0, // Placeholder for difference calculation
     },
     {
-      title: 'Unpaid Amount',
+      title: 'Total Registered Children',
       icon: 'unpaid',
       value: summaryData.unpaidAmount ? summaryData.unpaidAmount.toLocaleString() : '0',
       diff: 0, // Placeholder for difference calculation
     },
     {
-      title: 'Accepted Bookings',
+      title: 'Total Registered Churches',
       icon: 'accepted',
       value: summaryData.confirmedBookings || 0,
       diff: 0, // Placeholder for difference calculation
     },
     {
-      title: 'Rejected Bookings',
+      title: 'Linked Father/Children',
       icon: 'reject',
       value: summaryData.rejectedBookings || 0,
       diff: 0, // Placeholder for difference calculation

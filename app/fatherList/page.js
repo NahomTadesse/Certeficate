@@ -14,8 +14,8 @@ import {
   Modal,
   Stack,
   NumberInput,
-  Menu, // Import Menu for the three-dot actions
-  Select, // Import Select for the dropdown
+  Menu,
+  Select,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
@@ -24,8 +24,8 @@ import {
   IconSearch,
   IconEdit,
   IconTrash,
-  IconDotsVertical, // For the three-dot icon
-  IconPlayerPause, // For suspend action
+  IconDotsVertical,
+  IconPlayerPause,
 } from '@tabler/icons-react';
 
 // Mock data for fathers
@@ -37,7 +37,7 @@ const mockFathers = [
     churchName: 'St. George Church',
     registeredAt: '2023-01-15T09:30:00Z',
     childrenCount: 3,
-    status: 'active', // Added status for suspend functionality
+    status: 'active',
   },
   {
     id: 2,
@@ -64,11 +64,10 @@ const mockFathers = [
     churchName: 'St. Mary Church',
     registeredAt: '2023-04-01T08:00:00Z',
     childrenCount: 1,
-    status: 'suspended', // Example suspended father
+    status: 'suspended',
   },
 ];
 
-// Mock list of church names for the dropdown
 const churchNames = [
   'St. George Church',
   'Holy Savior Church',
@@ -81,31 +80,31 @@ const churchNames = [
 
 export default function FathersTable() {
   const [fathers, setFathers] = useState(mockFathers);
-  const [loading, setLoading] = useState(false); // For initial data loading
-  const [actionLoading, setActionLoading] = useState(false); // For individual action loading (edit/delete/suspend)
+  const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
   const [notification, setNotification] = useState({ visible: false, message: '', color: '' });
   const [search, setSearch] = useState('');
-  const [opened, { open, close }] = useDisclosure(false); // For the edit modal
-  const [currentFather, setCurrentFather] = useState(null); // The father being edited
-  const [editForm, setEditForm] = useState({}); // State for the edit form fields
+  const [opened, { open, close }] = useDisclosure(false);
+  const [currentFather, setCurrentFather] = useState(null);
+  const [editForm, setEditForm] = useState({});
 
-  // Handle click on the "Edit" action
+  const [transferModalOpened, { open: openTransfer, close: closeTransfer }] = useDisclosure(false);
+  const [selectedFatherForTransfer, setSelectedFatherForTransfer] = useState(null);
+  const [newChurch, setNewChurch] = useState(null);
+
   const handleEditClick = (father) => {
     setCurrentFather(father);
-    // Set initial form values, ensuring date is formatted correctly for type="date" input
     setEditForm({
       ...father,
       registeredAt: father.registeredAt ? father.registeredAt.split('T')[0] : '',
     });
-    open(); // Open the modal
+    open();
   };
 
-  // Update form state as user types/selects
   const handleFormChange = (field, value) => {
     setEditForm(prev => ({ ...prev, [field]: value }));
   };
 
-  // Handle saving changes from the edit modal
   const handleSave = () => {
     setActionLoading(true);
     setTimeout(() => {
@@ -113,7 +112,6 @@ export default function FathersTable() {
         f.id === currentFather.id
           ? {
               ...editForm,
-              // Ensure registeredAt is saved in original ISO format if needed
               registeredAt: editForm.registeredAt ? new Date(editForm.registeredAt).toISOString() : '',
             }
           : f
@@ -124,21 +122,19 @@ export default function FathersTable() {
         color: 'green',
       });
       setActionLoading(false);
-      close(); // Close the modal after saving
-    }, 1000); // Simulate API call delay
+      close();
+    }, 1000);
   };
 
-  // Handle deleting a father
   const handleDelete = (id) => {
     setActionLoading(true);
     setTimeout(() => {
       setFathers(fathers.filter(f => f.id !== id));
       setNotification({ visible: true, message: `Record deleted successfully`, color: 'green' });
       setActionLoading(false);
-    }, 1000); // Simulate API call delay
+    }, 1000);
   };
 
-  // Handle suspending/activating a father
   const handleSuspendToggle = (id) => {
     setActionLoading(true);
     setTimeout(() => {
@@ -153,19 +149,41 @@ export default function FathersTable() {
         color: 'green',
       });
       setActionLoading(false);
-    }, 1000); // Simulate API call delay
+    }, 1000);
   };
 
-  // Filter fathers based on search input
-  const filteredFathers = fathers.filter((father) => {
-    return (
-      father.name.toLowerCase().includes(search.toLowerCase()) ||
-      father.phoneNumber.includes(search) ||
-      father.churchName.toLowerCase().includes(search.toLowerCase())
-    );
-  });
+  const handleTransferClick = (father) => {
+    setSelectedFatherForTransfer(father);
+    setNewChurch(null);
+    openTransfer();
+  };
 
-  // Generate table rows from filtered fathers data
+  const handleConfirmTransfer = () => {
+    if (!newChurch || !selectedFatherForTransfer) return;
+
+    setActionLoading(true);
+    setTimeout(() => {
+      setFathers(fathers.map(f =>
+        f.id === selectedFatherForTransfer.id
+          ? { ...f, churchName: newChurch }
+          : f
+      ));
+      setNotification({
+        visible: true,
+        message: `Father ${selectedFatherForTransfer.name} transferred to ${newChurch}`,
+        color: 'green',
+      });
+      setActionLoading(false);
+      closeTransfer();
+    }, 1000);
+  };
+
+  const filteredFathers = fathers.filter((father) =>
+    father.name.toLowerCase().includes(search.toLowerCase()) ||
+    father.phoneNumber.includes(search) ||
+    father.churchName.toLowerCase().includes(search.toLowerCase())
+  );
+
   const rows = filteredFathers.map((father) => (
     <Table.Tr key={father.id}>
       <Table.Td>{father.name}</Table.Td>
@@ -176,46 +194,29 @@ export default function FathersTable() {
       </Table.Td>
       <Table.Td>{father.childrenCount}</Table.Td>
       <Table.Td>
-        <Text
-          size="sm"
-          color={father.status === 'active' ? 'green' : 'orange'}
-          fw={500}
-        >
+        <Text size="sm" color={father.status === 'active' ? 'green' : 'orange'} fw={500}>
           {father.status.charAt(0).toUpperCase() + father.status.slice(1)}
         </Text>
       </Table.Td>
       <Table.Td>
-        <Menu shadow="md" width={150} position="bottom-end">
+        <Menu shadow="md" width={160} position="bottom-end">
           <Menu.Target>
-            <Button
-              variant="subtle"
-              color="gray"
-              compact
-              loading={actionLoading}
-            >
+            <Button variant="subtle" color="gray" compact loading={actionLoading}>
               <IconDotsVertical size={16} />
             </Button>
           </Menu.Target>
-
           <Menu.Dropdown>
-            <Menu.Item
-              icon={<IconEdit size={14} />}
-              onClick={() => handleEditClick(father)}
-            >
+            <Menu.Item icon={<IconEdit size={14} />} onClick={() => handleEditClick(father)}>
               Edit
             </Menu.Item>
-            <Menu.Item
-              icon={<IconPlayerPause size={14} />}
-              onClick={() => handleSuspendToggle(father.id)}
-            >
+            <Menu.Item icon={<IconPlayerPause size={14} />} onClick={() => handleSuspendToggle(father.id)}>
               {father.status === 'active' ? 'Suspend' : 'Activate'}
             </Menu.Item>
+            <Menu.Item icon={<IconEdit size={14} />} onClick={() => handleTransferClick(father)}>
+              Transfer
+            </Menu.Item>
             <Menu.Divider />
-            <Menu.Item
-              icon={<IconTrash size={14} />}
-              color="red"
-              onClick={() => handleDelete(father.id)}
-            >
+            <Menu.Item icon={<IconTrash size={14} />} color="red" onClick={() => handleDelete(father.id)}>
               Delete
             </Menu.Item>
           </Menu.Dropdown>
@@ -228,7 +229,6 @@ export default function FathersTable() {
     <ScrollArea>
       <Title order={2} style={{ marginTop: 45, marginLeft: 20 }}>Fathers List</Title>
 
-      {/* Notification display */}
       {notification.visible && (
         <Notification
           color={notification.color}
@@ -240,15 +240,13 @@ export default function FathersTable() {
         </Notification>
       )}
 
-      {/* Loading indicator for initial data load or all actions */}
       {loading || actionLoading ? (
-        <Center style={{ height: 'calc(100vh - 120px)' }}> {/* Adjusted height for better centering */}
+        <Center style={{ height: 'calc(100vh - 120px)' }}>
           <Loader />
         </Center>
       ) : (
         <>
           <Group position="apart" style={{ margin: '20px' }}>
-            {/* Search input */}
             <TextInput
               placeholder="Search by name, phone, or church"
               value={search}
@@ -256,11 +254,8 @@ export default function FathersTable() {
               icon={<IconSearch size={16} />}
               style={{ flex: 1, maxWidth: 500 }}
             />
-            {/* Add Father Button (optional, but common for tables) */}
-            {/* <Button leftIcon={<IconPlus size={16} />}>Add Father</Button> */}
           </Group>
 
-          {/* Fathers Table */}
           <Table horizontalSpacing="md" verticalSpacing="xs" miw={700}>
             <Table.Thead>
               <Table.Tr>
@@ -269,14 +264,14 @@ export default function FathersTable() {
                 <Table.Th>Church</Table.Th>
                 <Table.Th>Date of Registration</Table.Th>
                 <Table.Th>Children</Table.Th>
-                <Table.Th>Status</Table.Th> {/* Added Status column */}
+                <Table.Th>Status</Table.Th>
                 <Table.Th>Actions</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
               {rows.length > 0 ? rows : (
                 <Table.Tr>
-                  <Table.Td colSpan={7}> {/* Adjusted colspan for new column */}
+                  <Table.Td colSpan={7}>
                     <Text fw={500} ta="center" py="md">
                       No fathers found
                     </Text>
@@ -292,7 +287,7 @@ export default function FathersTable() {
             onClose={close}
             title={currentFather ? `Edit Father: ${currentFather.name}` : 'Edit Father'}
             size="lg"
-            centered // Centers the modal on the screen
+            centered
           >
             {currentFather && (
               <Stack>
@@ -308,19 +303,19 @@ export default function FathersTable() {
                   onChange={(e) => handleFormChange('phoneNumber', e.target.value)}
                   placeholder="e.g., +251912345678"
                 />
-                <Select
+                {/* <Select
                   label="Church Name"
                   placeholder="Select church"
-                  data={churchNames} // Use the predefined list of church names
-                  value={editForm.churchName || null} // Use null for no selection
+                  data={churchNames}
+                  value={editForm.churchName || null}
                   onChange={(value) => handleFormChange('churchName', value)}
-                  searchable // Allow searching within the dropdown
-                  clearable // Allow clearing the selection
-                />
+                  searchable
+                  clearable
+                /> */}
                 <TextInput
                   label="Date of Registration"
                   type="date"
-                  value={editForm.registeredAt || ''} // value is YYYY-MM-DD
+                  value={editForm.registeredAt || ''}
                   onChange={(e) => handleFormChange('registeredAt', e.target.value)}
                 />
                 <NumberInput
@@ -331,19 +326,46 @@ export default function FathersTable() {
                   placeholder="Enter number of children"
                 />
                 <Group position="right" mt="md">
-                  <Button variant="outline" onClick={close}>
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleSave}
-                    loading={actionLoading}
-                    leftSection={<IconCheck size={16} />} // Use leftSection instead of leftIcon
-                  >
+                  <Button variant="outline" onClick={close}>Cancel</Button>
+                  <Button onClick={handleSave} loading={actionLoading} leftSection={<IconCheck size={16} />}>
                     Save Changes
                   </Button>
                 </Group>
               </Stack>
             )}
+          </Modal>
+
+          {/* Transfer Modal */}
+          <Modal
+            opened={transferModalOpened}
+            onClose={closeTransfer}
+            title={selectedFatherForTransfer ? `Transfer Father: ${selectedFatherForTransfer.name}` : 'Transfer Father'}
+            centered
+          >
+            <Stack>
+              <Select
+                label="Select New Church"
+                data={churchNames.filter(name => name !== selectedFatherForTransfer?.churchName)}
+                placeholder="Choose new church"
+                value={newChurch}
+                onChange={setNewChurch}
+                searchable
+                clearable
+              />
+              <Group position="right" mt="md">
+                <Button variant="default" onClick={closeTransfer}>
+                  Cancel
+                </Button>
+                <Button
+                  color="blue"
+                  onClick={handleConfirmTransfer}
+                  disabled={!newChurch}
+                  loading={actionLoading}
+                >
+                  Confirm Transfer
+                </Button>
+              </Group>
+            </Stack>
           </Modal>
         </>
       )}
